@@ -2,8 +2,7 @@ import { Prisma } from "@prisma/client"
 import { cache } from "react"
 import "server-only"
 import { prisma } from "./db"
-
-export const revalidate = 60 // revalidate the data at most every 1 minute
+import ms from "ms"
 
 export const getEmojis = cache(async (take: number = 100) =>
   prisma.emoji.findMany({
@@ -11,5 +10,6 @@ export const getEmojis = cache(async (take: number = 100) =>
     orderBy: { createdAt: Prisma.SortOrder.desc },
     where: { isFlagged: false, originalUrl: { not: null }, noBackgroundUrl: { not: null } },
     take,
+    cacheStrategy: { ttl: ms("30s"), swr: ms("60s") },
   })
 )
